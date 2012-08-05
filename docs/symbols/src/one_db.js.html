@@ -1,0 +1,201 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">/**
+<span class='line'>  2</span>  * @author &lt;a href="tarek.salah@badrit.com">Tarek Salah&lt;/a>
+<span class='line'>  3</span>  */</span><span class="WHIT">
+<span class='line'>  4</span> 
+<span class='line'>  5</span> 
+<span class='line'>  6</span> </span><span class="WHIT"> </span><span class="COMM">/** 
+<span class='line'>  7</span>   * contains reference to local database and handle its functionalities
+<span class='line'>  8</span>   * @namespace 
+<span class='line'>  9</span>   */</span><span class="WHIT">
+<span class='line'> 10</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">LocalDB</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 11</span> </span><span class="WHIT">   </span><span class="COMM">/** @memberOf LocalDB */</span><span class="WHIT">
+<span class='line'> 12</span> </span><span class="WHIT">	</span><span class="NAME">connection</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 13</span> </span><span class="WHIT">	</span><span class="COMM">/** 
+<span class='line'> 14</span> 	  * max database size
+<span class='line'> 15</span> 	  * @memberOf LocalDB 
+<span class='line'> 16</span> 	  */</span><span class="WHIT">
+<span class='line'> 17</span> </span><span class="WHIT">	</span><span class="NAME">max_db_size</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NUMB">1000000</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 18</span> </span><span class="WHIT">	</span><span class="COMM">/**
+<span class='line'> 19</span> 	 * @memberOf LocalDB
+<span class='line'> 20</span> 	 * @description connect to local database named &lt;b>main&lt;/b> with max size = 100 GB. &lt;br>
+<span class='line'> 21</span> 	 * &lt;u>&lt;b> Description &lt;/b>&lt;/u>&lt;br>
+<span class='line'> 22</span> 	 * if it is found just open it,
+<span class='line'> 23</span> 	 * else create it. &lt;br>
+<span class='line'> 24</span> 	 * then begin initiation of database by calling {@link LocalDB.init}.
+<span class='line'> 25</span> 	 * if the initiation has been done successfuly call {@link LocalDB.onReady},
+<span class='line'> 26</span> 	 * else call {@link LocalDB.onError}
+<span class='line'> 27</span> 	 */</span><span class="WHIT">
+<span class='line'> 28</span> </span><span class="WHIT">	</span><span class="NAME">connect</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 29</span> </span><span class="WHIT">		</span><span class="NAME">console.log</span><span class="PUNC">(</span><span class="STRN">"connecting to local database..."</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 30</span> </span><span class="WHIT">		</span><span class="NAME">LocalDB.connection</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">window.openDatabase</span><span class="PUNC">(</span><span class="STRN">"main"</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">"1"</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">"Main DB"</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">LocalDB.max_db_size</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 31</span> </span><span class="WHIT">		</span><span class="NAME">LocalDB.connection.transaction</span><span class="PUNC">(</span><span class="NAME">LocalDB.init</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">LocalDB.onError</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">LocalDB.onReady</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 32</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 33</span> </span><span class="WHIT">	</span><span class="COMM">/**	
+<span class='line'> 34</span> 	 * @memberOf LocalDB 
+<span class='line'> 35</span> 	 * @description called in case of error in connecting with local database.&lt;br>
+<span class='line'> 36</span> 	 * &lt;u>&lt;b> Description &lt;/b>&lt;/u>&lt;br>
+<span class='line'> 37</span> 	 * printing the error code and the type of it 
+<span class='line'> 38</span> 	 * @param {Object} e error code and type
+<span class='line'> 39</span> 	 */</span><span class="WHIT">
+<span class='line'> 40</span> </span><span class="WHIT">	</span><span class="NAME">onError</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">e</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 41</span> </span><span class="WHIT">		</span><span class="NAME">console.log</span><span class="PUNC">(</span><span class="STRN">"SQL ERROR"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 42</span> </span><span class="WHIT">		</span><span class="NAME">console.dir</span><span class="PUNC">(</span><span class="NAME">e</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 43</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 44</span> </span><span class="WHIT">	</span><span class="COMM">/**
+<span class='line'> 45</span> 	 * @description initiate the tables of the database. &lt;br>
+<span class='line'> 46</span> 	 * &lt;u>&lt;b> Description &lt;/b>&lt;/u>&lt;br>
+<span class='line'> 47</span> 	 * create table myProducts if not exits using the following query &lt;br>
+<span class='line'> 48</span> 	 * &lt;b> create table if not exists myProduct(id INTEGER PRIMARY KEY,name,price) &lt;/b>
+<span class='line'> 49</span> 	 * @memberOf LocalDB 
+<span class='line'> 50</span> 	 * @param {Object} tx transaction manager that used to execute the SQL statement 
+<span class='line'> 51</span> 	 */</span><span class="WHIT">
+<span class='line'> 52</span> </span><span class="WHIT">	</span><span class="NAME">init</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">tx</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 53</span> </span><span class="WHIT">		</span><span class="NAME">tx.executeSql</span><span class="PUNC">(</span><span class="STRN">"create table if not exists myProduct(id INTEGER PRIMARY KEY,name,price)"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 54</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 55</span> </span><span class="WHIT">	</span><span class="COMM">/**
+<span class='line'> 56</span> 	 * @description if database is ready to connect to server begin synchronization using  {@link RemoteDB.sync}. &lt;br>
+<span class='line'> 57</span> 	 * &lt;u>&lt;b> Description &lt;/b>&lt;/u>&lt;br>
+<span class='line'> 58</span> 	 * make many checks to begin synchronization such as: &lt;br>
+<span class='line'> 59</span> 	 * 1. checking network state &lt;br>
+<span class='line'> 60</span> 	 * 2. checking connection state &lt;br>
+<span class='line'> 61</span> 	 * if the connection failed only display the offers	calling  {@link Device.display}
+<span class='line'> 62</span> 	 * @memberOf LocalDB 
+<span class='line'> 63</span> 	 */</span><span class="WHIT">
+<span class='line'> 64</span> </span><span class="WHIT">	</span><span class="NAME">onReady</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 65</span> </span><span class="WHIT">		</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">navigator.network</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">navigator.network.connection.type</span><span class="WHIT"> </span><span class="PUNC">!=</span><span class="WHIT"> </span><span class="NAME">Connection.NONE</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 66</span> </span><span class="WHIT">			</span><span class="NAME">RemoteDB.sync</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 67</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT"> </span><span class="KEYW">else</span><span class="WHIT">
+<span class='line'> 68</span> </span><span class="WHIT">			</span><span class="NAME">Device.display</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 69</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 70</span> </span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 71</span> 
+<span class='line'> 72</span> 
+<span class='line'> 73</span> 
+<span class='line'> 74</span> 
+<span class='line'> 75</span> </span><span class="WHIT"> </span><span class="COMM">/** 
+<span class='line'> 76</span>   * contains reference to remote database and handle its functionalities
+<span class='line'> 77</span>   * @namespace 
+<span class='line'> 78</span>   */</span><span class="WHIT">
+<span class='line'> 79</span> </span><span class="WHIT">  </span><span class="WHIT">
+<span class='line'> 80</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">RemoteDB</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 81</span> </span><span class="WHIT">	</span><span class="COMM">/** 
+<span class='line'> 82</span> 	 * conatins the previous md5 that determine the state of database
+<span class='line'> 83</span> 	 * if it is changed or not
+<span class='line'> 84</span> 	 * @memberOf RemoteDB 
+<span class='line'> 85</span> 	 */</span><span class="WHIT">
+<span class='line'> 86</span> </span><span class="WHIT">	</span><span class="NAME">md5</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="STRN">''</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 87</span> </span><span class="WHIT">	</span><span class="COMM">/** 
+<span class='line'> 88</span> 	 * the interval to check for md5
+<span class='line'> 89</span> 	 * @memberOf RemoteDB 
+<span class='line'> 90</span> 	 */</span><span class="WHIT">
+<span class='line'> 91</span> </span><span class="WHIT">	</span><span class="NAME">md5_tick_interval</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NUMB">10000</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 92</span> </span><span class="WHIT">    </span><span class="COMM">/** 
+<span class='line'> 93</span> 	 * server URL 196.218.156.154:8880
+<span class='line'> 94</span> 	 * @memberOf RemoteDB 
+<span class='line'> 95</span> 	 */</span><span class="WHIT">
+<span class='line'> 96</span> </span><span class="WHIT">	</span><span class="NAME">url</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="STRN">'http://192.168.1.18:8082'</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 97</span> </span><span class="WHIT">	</span><span class="COMM">//	url : 'http://196.218.156.154:8880',</span><span class="WHIT">
+<span class='line'> 98</span> </span><span class="WHIT">	</span><span class="COMM">/**
+<span class='line'> 99</span> 	 * check md5 
+<span class='line'>100</span> 	 * if md5 changed connect with local database.&lt;br>
+<span class='line'>101</span> 	 * &lt;u>&lt;b> Description &lt;/b>&lt;/u>&lt;br>
+<span class='line'>102</span> 	 * use get request to get md5 and compare it with
+<span class='line'>103</span> 	 * the last md5 &lt;br> if it is changed so the database changed
+<span class='line'>104</span> 	 * and needs to make updates so call {@link LocalDB.connect}.
+<span class='line'>105</span> 	 * @memberOf RemoteDB 
+<span class='line'>106</span> 	 */</span><span class="WHIT">
+<span class='line'>107</span> </span><span class="WHIT">	</span><span class="NAME">checkMD5</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>108</span> </span><span class="WHIT">		</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">url</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">RemoteDB.url</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="STRN">"/content/campaignHash"</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>109</span> </span><span class="WHIT">		</span><span class="NAME">$.get</span><span class="PUNC">(</span><span class="NAME">url</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">resp</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>110</span> </span><span class="WHIT">			</span><span class="NAME">console.log</span><span class="PUNC">(</span><span class="NAME">resp</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>111</span> </span><span class="WHIT">			</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">resp</span><span class="WHIT"> </span><span class="PUNC">!=</span><span class="WHIT"> </span><span class="NAME">RemoteDB.md5</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>112</span> </span><span class="WHIT">				</span><span class="NAME">RemoteDB.md5</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">resp</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>113</span> </span><span class="WHIT">				</span><span class="NAME">LocalDB.connect</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>114</span> </span><span class="WHIT">			</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>115</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="WHIT">
+<span class='line'>116</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>117</span> </span><span class="WHIT">	</span><span class="COMM">/**
+<span class='line'>118</span> 	 * begin synchronization.&lt;br>
+<span class='line'>119</span> 	 * &lt;u>&lt;b> Description &lt;/b>&lt;/u>&lt;br>
+<span class='line'>120</span> 	 * use get request to get the records of the remote database &lt;b>(myProduct table)&lt;/b>
+<span class='line'>121</span> 	 * using method getProducts on backend then begin synchronization&lt;br>
+<span class='line'>122</span> 	 * 1.call {@link RemoteDB.checkForChanges} to make insert and update operations.&lt;br>
+<span class='line'>123</span> 	 * 2.call {@link RemoteDB.checkForDeletionChanges} to make delete operations.&lt;br>
+<span class='line'>124</span> 	 * then call {@link Device.display} to show the new offers
+<span class='line'>125</span> 	 * @memberOf RemoteDB 
+<span class='line'>126</span> 	 */</span><span class="WHIT">
+<span class='line'>127</span> </span><span class="WHIT">	</span><span class="NAME">sync</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>128</span> </span><span class="WHIT">		</span><span class="NAME">$</span><span class="PUNC">(</span><span class="STRN">"#docs"</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">html</span><span class="PUNC">(</span><span class="STRN">"Refreshing documentation..."</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>129</span> </span><span class="WHIT">		</span><span class="NAME">$.get</span><span class="PUNC">(</span><span class="NAME">RemoteDB.url</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="STRN">"/index.php/content/getProducts"</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">resp</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">code</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>130</span> </span><span class="WHIT">			</span><span class="NAME">console.log</span><span class="PUNC">(</span><span class="STRN">"back from getting updates with "</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">resp.length</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="STRN">" items to process."</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>131</span> </span><span class="WHIT">			</span><span class="NAME">RemoteDB.checkForChanges</span><span class="PUNC">(</span><span class="NAME">resp</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>132</span> </span><span class="WHIT">			</span><span class="NAME">RemoteDB.checkForDeletionChanges</span><span class="PUNC">(</span><span class="NAME">resp</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>133</span> </span><span class="WHIT">			</span><span class="NAME">Device.display</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>134</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">"json"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>135</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>136</span> </span><span class="WHIT">	</span><span class="COMM">/**
+<span class='line'>137</span> 	 * connect to remote server and get the changes of updates and inserts.&lt;br>
+<span class='line'>138</span> 	 * &lt;u>&lt;b> Description &lt;/b>&lt;/u>&lt;br>
+<span class='line'>139</span> 	 * connect to myProduct table on local database and get its records then compare
+<span class='line'>140</span> 	 * it with records from remote database&lt;br>
+<span class='line'>141</span> 	 * 1.update every common record&lt;br>
+<span class='line'>142</span> 	 * 2.if record was founded on remote database and not found on local one
+<span class='line'>143</span> 	 * ,so insert it in local
+<span class='line'>144</span> 	 * @memberOf RemoteDB
+<span class='line'>145</span> 	 * @param {Object} records the records for remote database	 
+<span class='line'>146</span> 	 */</span><span class="WHIT">
+<span class='line'>147</span> </span><span class="WHIT">	</span><span class="NAME">checkForChanges</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">records</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>148</span> </span><span class="WHIT">		</span><span class="COMM">//check fo new db updates or insertions</span><span class="WHIT">
+<span class='line'>149</span> </span><span class="WHIT">		</span><span class="NAME">records.forEach</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">ob</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>150</span> </span><span class="WHIT">			</span><span class="NAME">LocalDB.connection.transaction</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">ctx</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>151</span> </span><span class="WHIT">				</span><span class="NAME">ctx.executeSql</span><span class="PUNC">(</span><span class="STRN">"select name from myProduct where id = ?"</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="NAME">ob.id</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">tx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">checkres</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>152</span> </span><span class="WHIT">					</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">checkres.rows.length</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>153</span> </span><span class="WHIT">						</span><span class="NAME">console.log</span><span class="PUNC">(</span><span class="STRN">"updating "</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">ob.id</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="STRN">" "</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">ob.name</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>154</span> </span><span class="WHIT">						</span><span class="NAME">tx.executeSql</span><span class="PUNC">(</span><span class="STRN">"update myProduct set id=?,name=?,price=? where id=?"</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="NAME">ob.id</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">ob.name</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">ob.price</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">ob.id</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>155</span> </span><span class="WHIT">					</span><span class="PUNC">}</span><span class="WHIT"> </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>156</span> </span><span class="WHIT">						</span><span class="NAME">console.log</span><span class="PUNC">(</span><span class="STRN">"insert "</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">ob.id</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="STRN">" "</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">ob.name</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>157</span> </span><span class="WHIT">						</span><span class="NAME">tx.executeSql</span><span class="PUNC">(</span><span class="STRN">"insert into myProduct (id,name,price) values(?,?,?)"</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="NAME">ob.id</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">ob.name</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">ob.price</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>158</span> </span><span class="WHIT">						</span><span class="NAME">Device.showAlert</span><span class="PUNC">(</span><span class="NAME">ob.name</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="STRN">" "</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">ob.price</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>159</span> </span><span class="WHIT">						</span><span class="NAME">Device.playBeep</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>160</span> </span><span class="WHIT">						</span><span class="NAME">Device.vibrate</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>161</span> </span><span class="WHIT">					</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>162</span> </span><span class="WHIT">				</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>163</span> </span><span class="WHIT">			</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>164</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>165</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>166</span> </span><span class="WHIT">	</span><span class="COMM">/**
+<span class='line'>167</span> 	 * connect to remote server and get the changes of deletes.&lt;br>
+<span class='line'>168</span> 	 * &lt;u>&lt;b> Description &lt;/b>&lt;/u>&lt;br>
+<span class='line'>169</span> 	 * connect to myProduct table on local database and get its records then compare
+<span class='line'>170</span> 	 * it with records from remote database&lt;br>
+<span class='line'>171</span> 	 * if record was founded on local database and not found on remote one
+<span class='line'>172</span> 	 * ,so delete it from local
+<span class='line'>173</span> 	 * @memberOf RemoteDB 
+<span class='line'>174</span> 	 * @param {Object} records the records for remote database	
+<span class='line'>175</span> 	 */</span><span class="WHIT">
+<span class='line'>176</span> </span><span class="WHIT">	</span><span class="NAME">checkForDeletionChanges</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">records</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>177</span> </span><span class="WHIT">		</span><span class="NAME">LocalDB.connection.transaction</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">tx</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>178</span> </span><span class="WHIT">			</span><span class="NAME">tx.executeSql</span><span class="PUNC">(</span><span class="STRN">"select id,name,price from myProduct"</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">tx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">results</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>179</span> </span><span class="WHIT">				</span><span class="KEYW">for</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">&lt;</span><span class="WHIT"> </span><span class="NAME">results.rows.length</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>180</span> </span><span class="WHIT">					</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">x</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">true</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>181</span> </span><span class="WHIT">					</span><span class="NAME">records.forEach</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">ob</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>182</span> </span><span class="WHIT">						</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">results.rows.item</span><span class="PUNC">(</span><span class="NAME">i</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">id</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="NAME">ob.id</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>183</span> </span><span class="WHIT">							</span><span class="NAME">x</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">false</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>184</span> </span><span class="WHIT">						</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>185</span> </span><span class="WHIT">					</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>186</span> </span><span class="WHIT">					</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>187</span> </span><span class="WHIT">						</span><span class="NAME">console.log</span><span class="PUNC">(</span><span class="STRN">"possible delete "</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">results.rows.item</span><span class="PUNC">(</span><span class="NAME">i</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">id</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>188</span> </span><span class="WHIT">						</span><span class="NAME">tx.executeSql</span><span class="PUNC">(</span><span class="STRN">"delete from myProduct where id = ?"</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="NAME">results.rows.item</span><span class="PUNC">(</span><span class="NAME">i</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">id</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>189</span> </span><span class="WHIT">					</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>190</span> </span><span class="WHIT">				</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>191</span> </span><span class="WHIT">			</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>192</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>193</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>194</span> </span><span class="PUNC">}</span></pre></body></html>
